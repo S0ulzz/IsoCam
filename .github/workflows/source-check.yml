@@ -31,8 +31,31 @@ jobs:
 
           cmake --build build --config Release
 
-      - name: Upload build output
+      - name: Package IsoCam
+        run: |
+          mkdir -p package/config
+
+          cp build/libIsoCam.so package/libIsoCam.so
+
+          cat > package/manifest.json <<'EOF'
+          {
+            "type": "preload-native",
+            "name": "IsoCam",
+            "author": "S0ulzz",
+            "version": "0.1.0",
+            "entry": "libIsoCam.so",
+            "minecraft_versions": [],
+            "overwrite_files": [],
+            "overwrite_folders": []
+          }
+          EOF
+
+          cd package
+          zip -r ../IsoCam-Android-ARM64.levipack manifest.json libIsoCam.so
+          cd ..
+
+      - name: Upload LeviPack
         uses: actions/upload-artifact@v4
         with:
-          name: IsoCam-Android-ARM64
-          path: build/**/*.so
+          name: IsoCam-LeviPack-ARM64
+          path: IsoCam-Android-ARM64.levipack
