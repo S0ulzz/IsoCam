@@ -1,20 +1,38 @@
-name: IsoCam source check
+
+name: IsoCam Android ARM64 Build
 
 on:
   workflow_dispatch:
   push:
-    branches: [ "main" ]
 
 jobs:
-  source-check:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout source
         uses: actions/checkout@v4
-      - name: Check project files
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: |
+            ndk;27.2.12479018
+
+      - name: Build IsoCam
         run: |
-          test -f CMakeLists.txt
-          test -f src/main.cpp
-          test -f include/isocam_config.hpp
-          echo "IsoCam scaffold files are present."
-          echo "This workflow does not build a native mod yet."
+          export ANDROID_NDK_HOME="$ANDROID_SDK_ROOT/ndk/27.2.12479018"
+
+          cmake -S . -B build \
+            -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-24 \
+            -DCMAKE_BUILD_TYPE=Release
+
+          cmake --build build --config Release
+
+      - name: Upload build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: IsoCam-Android-ARM64
+          path: build/**/*.so
