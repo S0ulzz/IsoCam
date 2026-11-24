@@ -1,0 +1,20 @@
+name: IsoCam source check
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  source-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check project files
+        run: |
+          test -f CMakeLists.txt
+          test -f src/main.cpp
+          test -f include/isocam_config.hpp
+          echo "IsoCam scaffold files are present."
+          echo "This workflow does not build a native mod yet."
