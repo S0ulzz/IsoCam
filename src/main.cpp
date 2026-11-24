@@ -1,7 +1,10 @@
 
 #include <pl/Mod.hpp>
+#include <pl/ModMenu.hpp>
 
 namespace {
+
+constexpr const char* kModuleId = "isocam.camera";
 
 class IsoCam {
 public:
@@ -13,22 +16,37 @@ public:
     IsoCam() : mSelf(*ll::mod::NativeMod::current()) {}
 
     bool load() {
-        mSelf.getLogger().info("IsoCam loaded safely");
+        mSelf.getLogger().info("IsoCam loaded");
         return true;
     }
 
     bool enable() {
-        mSelf.getLogger().info("IsoCam enabled");
-        return true;
+        const bool registered =
+            pl::modmenu::ModuleBuilder(
+                kModuleId,
+                "IsoCam Camera"
+            )
+            .modId(mSelf.getId())
+            .description("Isometric camera settings")
+            .defaultEnabled(true)
+            .registerModule();
+
+        if (registered) {
+            mSelf.getLogger().info("IsoCam module registered");
+        } else {
+            mSelf.getLogger().error("IsoCam module registration failed");
+        }
+
+        return registered;
     }
 
     bool disable() {
-        mSelf.getLogger().info("IsoCam disabled");
+        pl::modmenu::unregisterModule(kModuleId);
         return true;
     }
 
     bool unload() {
-        mSelf.getLogger().info("IsoCam unloaded");
+        pl::modmenu::unregisterModule(kModuleId);
         return true;
     }
 
