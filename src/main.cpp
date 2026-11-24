@@ -1,18 +1,10 @@
 
-#include <atomic>
-#include <cstdlib>
-#include <string>
-#include <string_view>
-
 #include <pl/Mod.hpp>
 #include <pl/ModMenu.hpp>
 
 namespace {
 
-constexpr const char* kModuleId = "isocam.camera";
-constexpr const char* kEnabledKey = "camera_enabled";
-constexpr const char* kAngleKey = "camera_angle";
-constexpr const char* kDistanceKey = "camera_distance";
+constexpr const char* MODULE_ID = "isocam";
 
 class IsoCam {
 public:
@@ -21,110 +13,41 @@ public:
         return mod;
     }
 
-    IsoCam() : mSelf(*ll::mod::NativeMod::current()) {}
+    IsoCam() : self(*ll::mod::NativeMod::current()) {}
 
     bool load() {
-        mSelf.getLogger().info("IsoCam loaded");
+        self.getLogger().info("IsoCam loaded");
         return true;
     }
 
     bool enable() {
-        const bool registered =
-            pl::modmenu::ModuleBuilder(kModuleId, "IsoCam Camera")
-                .modId(mSelf.getId())
-                .description("Isometric camera settings")
-                .defaultEnabled(true)
-                .onToggle(onToggle)
-                .config(
-                    kEnabledKey,
-                    "Camera Enabled",
-                    pl::modmenu::ConfigType::Toggle,
-                    "false"
-                )
-                .config(
-                    kAngleKey,
-                    "Camera Angle",
-                    pl::modmenu::ConfigType::SliderFloat,
-                    "45",
-                    "15",
-                    "75"
-                )
-                .config(
-                    kDistanceKey,
-                    "Camera Distance",
-                    pl::modmenu::ConfigType::SliderFloat,
-                    "10",
-                    "3",
-                    "30"
-                )
-                .onConfigChanged(onConfigChanged)
+        const bool result =
+            pl::modmenu::ModuleBuilder(MODULE_ID, "IsoCam")
+                .modId(self.getId())
+                .description("IsoCam native mod")
+                .defaultEnabled(false)
                 .registerModule();
 
-        if (registered) {
-            mSelf.getLogger().info("IsoCam menu registered");
-        } else {
-            mSelf.getLogger().error("IsoCam menu registration failed");
-        }
+        self.getLogger().info(
+            result ? "IsoCam menu registered"
+                   : "IsoCam menu registration failed"
+        );
 
-        return registered;
+        return result;
     }
 
     bool disable() {
-        pl::modmenu::unregisterModule(kModuleId);
-        mSelf.getLogger().info("IsoCam disabled");
+        pl::modmenu::unregisterModule(MODULE_ID);
         return true;
     }
 
     bool unload() {
-        pl::modmenu::unregisterModule(kModuleId);
-        mSelf.getLogger().info("IsoCam unloaded");
+        pl::modmenu::unregisterModule(MODULE_ID);
         return true;
     }
 
 private:
-    ll::mod::NativeMod& mSelf;
-
-    std::atomic_bool mCameraEnabled{false};
-    std::atomic<float> mCameraAngle{45.0f};
-    std::atomic<float> mCameraDistance{10.0f};
-
-    static void onToggle(std::string_view id, bool enabled) {
-        if (id == kModuleId) {
-            instance().mSelf.getLogger().info(
-                "IsoCam module: {}",
-                enabled ? "enabled" : "disabled"
-            );
-        }
-    }
-
-    static void onConfigChanged(
-        std::string_view id,
-        std::string_view key,
-        std::string_view value
-    ) {
-        if (id != kModuleId) return;
-
-        auto& mod = instance();
-
-        if (key == kEnabledKey) {
-            mod.mCameraEnabled =
-                value == "true" || value == "1" || value == "on";
-        } else if (key == kAngleKey) {
-            mod.mCameraAngle = std::strtof(
-                std::string(value).c_str(), nullptr
-            );
-        } else if (key == kDistanceKey) {
-            mod.mCameraDistance = std::strtof(
-                std::string(value).c_str(), nullptr
-            );
-        }
-
-        mod.mSelf.getLogger().info(
-            "IsoCam setting changed: {} = {}",
-            key,
-            value
-        );
-    }
+    ll::mod::NativeMod& self;
 };
 
 }
