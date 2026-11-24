@@ -1,0 +1,9 @@
+build/
+.gradle/
+.cxx/
+.externalNativeBuild/
+*.so
+*.levipack
+*.apk
+*.aab
+.DS_Store
