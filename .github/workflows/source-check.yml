@@ -1,8 +1,7 @@
-YAML
 
 name: IsoCam Android ARM64 Build
 
-on:
+'on':
   workflow_dispatch:
   push:
 
