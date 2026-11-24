@@ -1,3 +1,4 @@
+YAML
 
 name: IsoCam Android ARM64 Build
 
@@ -31,6 +32,11 @@ jobs:
 
           cmake --build build --config Release
 
+      - name: Verify library
+        run: |
+          ls -lah build/
+          test -f build/libIsoCam.so
+
       - name: Package IsoCam
         run: |
           mkdir -p package/config
@@ -54,8 +60,13 @@ jobs:
           zip -r ../IsoCam-Android-ARM64.levipack manifest.json libIsoCam.so
           cd ..
 
+          test -f IsoCam-Android-ARM64.levipack
+          ls -lh IsoCam-Android-ARM64.levipack
+
       - name: Upload LeviPack
         uses: actions/upload-artifact@v4
         with:
           name: IsoCam-LeviPack-ARM64
           path: IsoCam-Android-ARM64.levipack
+          if-no-files-found: error
+          retention-days: 7
